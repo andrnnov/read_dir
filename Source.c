@@ -12,7 +12,7 @@ typedef struct {
     unsigned long long size_file;
 } file;
 
-int merge_sort(file* ptr, unsigned int count) {
+int merge_sort(file* ptr, unsigned int count, int type) {
     unsigned int step = 1;              // шаг разбиени€ последовательности
     unsigned long long* buff, * temp;   // дополнительные массивы
     double time_spent = 0.0;
@@ -41,9 +41,17 @@ int merge_sort(file* ptr, unsigned int count) {
             m = m < count ? m : count;      // сортируемый участок не выходит за границы последовательности
             r = r < count ? r : count;
             unsigned int i1 = l, i2 = m;    // индексы сравниваемых элементов
-            while (i1 < m && i2 < r) {                                  // пока i1 не дошЄл до середины и i2 не дошЄл до конца
-                if (buff[i1] < buff[i2]) temp[index++] = buff[i1++];    // заполн€ем участок результирующей последовательности
-                else temp[index++] = buff[i2++]; 
+            while (i1 < m && i2 < r) {      // пока i1 не дошЄл до середины и i2 не дошЄл до конца
+                switch (type) {
+                case 1:
+                    if (buff[i1] < buff[i2]) temp[index++] = buff[i1++];    // заполн€ем участок результирующей последовательности
+                    else temp[index++] = buff[i2++];
+                    break;
+                case 2:
+                    if (buff[i1] > buff[i2]) temp[index++] = buff[i1++];    // заполн€ем участок результирующей последовательности
+                    else temp[index++] = buff[i2++];
+                    break;
+                }               
             }
             // »ли i1 < m или i2 < r - только один из операторов while может выполнитьс€
             while (i1 < m) temp[index++] = buff[i1++];  // заносим оставшиес€ элементы сортируемых участков
@@ -74,8 +82,8 @@ int merge_sort(file* ptr, unsigned int count) {
 }
 
 
-int insert_sort(file* ptr, unsigned int count) {
-    unsigned int j;
+int insert_sort(file* ptr, unsigned int count, int type) {
+    unsigned int j = 0, key = 0;
     unsigned long long t = 0;
     unsigned long long* buff;
     double time_spent = 0.0;
@@ -85,22 +93,37 @@ int insert_sort(file* ptr, unsigned int count) {
         return 0;
     }
     for (unsigned int i = 0; i < count; i++) {
-        if (buff[i]) 
+//        if (buff[i]) 
             buff[i] = ptr[i].size_file;
+//            printf("buff[%d]=%llu\n", i, buff[i]);
     }
 
     clock_t begin = clock();
-    for (unsigned int i = 1; i < count; i++)
+    for (unsigned int i = 0; i < count - 1; i++)
     {
-        t = buff[i];
-        j = i - 1;
-        while (j >= 0 && buff[j] > t) {
-            buff[j + 1] = buff[j];
-            j--;
+        key = i + 1;
+        t = buff[key];
+        for (j = i + 1; j > 0; j--)
+        {
+            switch (type) {
+            case 1:
+                if (t > buff[j - 1])
+                {
+                    buff[j] = buff[j - 1];
+                    key = j - 1;
+                }
+                break;
+            case 2:
+                if (t < buff[j - 1])
+                {
+                    buff[j] = buff[j - 1];
+                    key = j - 1;
+                }
+                break;
+            }
         }
-        buff[j + 1] = t;
+        buff[key] = t;
     }
-
     clock_t end = clock();
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
     printf("The elapsed time is %f seconds", time_spent);
@@ -118,7 +141,7 @@ int insert_sort(file* ptr, unsigned int count) {
     return 1;
 }
 
-int select_sort(file* ptr, unsigned int count) {
+int select_sort(file* ptr, unsigned int count, int type) {
     unsigned int a, b, c;
     int exchange = 0;
     unsigned long long t = 0;
@@ -139,12 +162,25 @@ int select_sort(file* ptr, unsigned int count) {
         exchange = 0;
         c = a;
         t = buff[a];
-        for (b = a + 1; b < count; ++b) {
-            if (buff[b] < t) {
-                c = b;
-                t = buff[b];
-                exchange = 1;
+        switch(type) {
+        case 1:
+            for (b = a + 1; b < count; ++b) {
+                if (buff[b] < t) {
+                    c = b;
+                    t = buff[b];
+                    exchange = 1;
+                }
             }
+            break;
+        case 2:
+            for (b = a + 1; b < count; ++b) {
+                if (buff[b] > t) {
+                    c = b;
+                    t = buff[b];
+                    exchange = 1;
+                }
+            }
+            break;
         }
         if (exchange) {
             buff[c] = buff[a];
@@ -169,7 +205,7 @@ int select_sort(file* ptr, unsigned int count) {
     return 1;
 }
 
-int find(wchar_t* PathAndName, unsigned int count)
+int find(wchar_t* PathAndName, unsigned int count, int type_sort)
 {
     WIN32_FIND_DATA FindFileData;
     HANDLE hf;
@@ -185,8 +221,8 @@ int find(wchar_t* PathAndName, unsigned int count)
     if (hf != INVALID_HANDLE_VALUE) {
         while (FindNextFile(hf, &FindFileData)) {
             nFileLen = (FindFileData.nFileSizeHigh * ((unsigned long long)MAXDWORD + 1)) + FindFileData.nFileSizeLow;
-            if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                printf("%ls\t  аталог\n", FindFileData.cFileName);
+            if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+//                printf("%ls\t  аталог\n", FindFileData.cFileName);
             else {
                 wcscpy_s(ptrf[i].name_file, sizeof(FindFileData.cFileName) / sizeof(wchar_t), FindFileData.cFileName);
  //               printf("sizeof() = %llu\n", (unsigned long long)(sizeof(FindFileData.cFileName) / sizeof(wchar_t)));
@@ -196,9 +232,30 @@ int find(wchar_t* PathAndName, unsigned int count)
                 i++;
             }
         }
-        for(unsigned int j = 0; j < count; j++)
-            printf("%d\t%ls\t %llu\n", j, ptrf[j].name_file, ptrf[j].size_file);
-        merge_sort(ptrf, count);
+        switch(type_sort) {
+        case 1: printf("Select sort. Sort by ascending size.\n");
+                select_sort(ptrf, count, 1);
+                break;
+        case 2: printf("Select sort. Sort by dicending size.\n");
+                select_sort(ptrf, count, 2);
+                break;
+        case 3: printf("Insert sort. Sort by ascending size.\n");
+                insert_sort(ptrf, count, 1);
+                break;
+        case 4: printf("Insert sort. Sort by dicending size.\n");
+                insert_sort(ptrf, count, 2);
+                break;
+        case 5: printf("Merge sort. Sort by ascending size.\n");
+                merge_sort(ptrf, count, 1);
+                break;
+        case 6: printf("Merge sort. Sort by dicending size.\n");
+                merge_sort(ptrf, count, 2);
+                break;
+        default:for (unsigned int j = 0; j < count; j++)
+                    printf("%d\t%ls\t %llu\n", j, ptrf[j].name_file, ptrf[j].size_file);
+                printf("Sort type from 1 to 6\n");
+        }
+//        merge_sort(ptrf, count);
 //        select_sort(ptrf, count);
 //        insert_sort(ptrf, count);
         free(ptrf);
@@ -249,20 +306,30 @@ int main() {
 //    wchar_t *path = L"C:\\book\\*.*";
     wchar_t path[100];
     wchar_t ch = '\\';
+    int type_sort;
 
     setlocale(LC_ALL, "Russian");
     
-    while (wcsncmp(path, L"quit", (unsigned)sizeof(path))) {
+     do {
         printf("enter path or quit to exit: ");
 //        fgetws(str, 100, stdin);
         wscanf_s(L"%s", path, (unsigned)_countof(path));
-        wprintf(L"\t%s\t%llu\n", doubles(path, ch), _countof(path));
+//        wprintf(L"\t%s\t%llu\n", doubles(path, ch), _countof(path));
+
         if (wcsncmp(path, L"quit", (unsigned)sizeof(path))) {
+            printf("1. Select sort. Sort by ascending size.\n");
+            printf("2. Select sort. Sort by dicending size.\n");
+            printf("3. Insert sort. Sort by ascending size.\n");
+            printf("4. Insert sort. Sort by dicending size.\n");
+            printf("5. Merge sort. Sort by ascending size.\n");
+            printf("6. Merge sort. Sort by dicending size.\n");
+            printf("Enter file sort type: ");
+            scanf_s("%d", &type_sort);
             num = count_files(path);
-            printf("num = %d\n", num);
-            find(path, num);
+            printf("\n");
+            find(path, num, type_sort);
         }
-    }
+    } while (wcsncmp(path, L"quit", (unsigned)sizeof(path)));
 
 //    wprintf_s(L"%ls", path);
 //    num = count_files(path);
