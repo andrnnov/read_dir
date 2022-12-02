@@ -5,7 +5,6 @@
 #include <string.h>
 #include <malloc.h>
 #include <time.h>
-//#include <tchar.h>
 
 typedef struct {
     wchar_t name_file[260];
@@ -21,10 +20,9 @@ int merge_sort(file* ptr, unsigned int count, int type) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
         return 0;
     }
-    for (unsigned int i = 0; i < count; i++) {
-        if (buff[i])
+    for (unsigned int i = 0; i < count; i++) 
             buff[i] = ptr[i].size_file;
-    }
+    
     if ((temp = malloc(sizeof(unsigned long long) * count)) == NULL) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
         return 0;
@@ -93,9 +91,7 @@ int insert_sort(file* ptr, unsigned int count, int type) {
         return 0;
     }
     for (unsigned int i = 0; i < count; i++) {
-//        if (buff[i]) 
             buff[i] = ptr[i].size_file;
-//            printf("buff[%d]=%llu\n", i, buff[i]);
     }
 
     clock_t begin = clock();
@@ -128,8 +124,6 @@ int insert_sort(file* ptr, unsigned int count, int type) {
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
     printf("The elapsed time is %f seconds", time_spent);
     printf("\n");
-//    for (unsigned int i = 0; i < count; i++)
-//        printf("%llu\n", buff[i]);
     for (unsigned int i = 0; i < count; i++)
         for (j = 0; j < count; j++)
             if (buff[i] == ptr[j].size_file) {
@@ -198,8 +192,6 @@ int select_sort(file* ptr, unsigned int count, int type) {
                 printf("%d\t%ls\t %llu\n", a, ptr[b].name_file, ptr[b].size_file);
                 break;
             }
-//        if (i < count)
-//            printf("%llu\n", buff[i]);
     
     free(buff);
     return 1;
@@ -218,6 +210,18 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort)
         return 0;
     }
     hf = FindFirstFile(PathAndName, &FindFileData);
+    if (hf == INVALID_HANDLE_VALUE) {
+        printf("Invalid File Handle. GetLastError reports %d\n",
+            GetLastError());
+        return -1;
+    }
+
+    if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+        wcscpy_s(ptrf[i].name_file, sizeof(FindFileData.cFileName) / sizeof(wchar_t), FindFileData.cFileName);
+        nFileLen = (FindFileData.nFileSizeHigh * ((unsigned long long)MAXDWORD + 1)) + FindFileData.nFileSizeLow;
+        ptrf[i].size_file = nFileLen;
+        i++;
+    }
     if (hf != INVALID_HANDLE_VALUE) {
         while (FindNextFile(hf, &FindFileData)) {
             nFileLen = (FindFileData.nFileSizeHigh * ((unsigned long long)MAXDWORD + 1)) + FindFileData.nFileSizeLow;
@@ -255,12 +259,8 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort)
                     printf("%d\t%ls\t %llu\n", j, ptrf[j].name_file, ptrf[j].size_file);
                 printf("Sort type from 1 to 6\n");
         }
-//        merge_sort(ptrf, count);
-//        select_sort(ptrf, count);
-//        insert_sort(ptrf, count);
         free(ptrf);
         FindClose(hf);
-//        printf("%d\n", (unsigned int)sizeof(file));
         system("pause");
     }
     else {
@@ -277,7 +277,15 @@ int count_files(wchar_t* PathAndName)
     int i = 0;
 
     hf = FindFirstFile(PathAndName, &FindFileData);
-    if (hf != INVALID_HANDLE_VALUE) 
+    if (hf == INVALID_HANDLE_VALUE) {
+        printf("Invalid File Handle. GetLastError reports %d\n",
+        GetLastError());
+        return -1;
+    }
+
+    if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) i++;
+
+    if (hf != INVALID_HANDLE_VALUE)
         while (FindNextFile(hf, &FindFileData)) 
             if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) i++;
 
@@ -285,22 +293,6 @@ int count_files(wchar_t* PathAndName)
 //    system("pause");
     return i;
 }
-
-wchar_t* doubles(wchar_t* s, wchar_t c) {   // удваивает в строке s символ c
-    int cnt = 0;
-    for (const wchar_t* t = s; *t; ++t)
-        if (*t == c) ++cnt;
-    wchar_t * q = s + wcslen(s) - 1,
-        * t = s + wcslen(s) + cnt;
-    *t-- = 0;
-    while (q >= s)
-    {
-        if (*q == c) *t-- = c;
-        *t-- = *q--;
-    }
-    return s;
-}
-
 int main() {
     unsigned int num = 0;
 //    wchar_t *path = L"C:\\book\\*.*";
@@ -311,12 +303,11 @@ int main() {
     setlocale(LC_ALL, "Russian");
     
      do {
-        printf("enter path or quit to exit: ");
+        printf("enter path or exit: ");
 //        fgetws(str, 100, stdin);
         wscanf_s(L"%s", path, (unsigned)_countof(path));
-//        wprintf(L"\t%s\t%llu\n", doubles(path, ch), _countof(path));
 
-        if (wcsncmp(path, L"quit", (unsigned)sizeof(path))) {
+        if (wcsncmp(path, L"exit", (unsigned)sizeof(path))) {
             printf("1. Select sort. Sort by ascending size.\n");
             printf("2. Select sort. Sort by dicending size.\n");
             printf("3. Insert sort. Sort by ascending size.\n");
@@ -326,14 +317,11 @@ int main() {
             printf("Enter file sort type: ");
             scanf_s("%d", &type_sort);
             num = count_files(path);
+            if (num < 0) continue;
             printf("\n");
             find(path, num, type_sort);
         }
-    } while (wcsncmp(path, L"quit", (unsigned)sizeof(path)));
+    } while (wcsncmp(path, L"exit", (unsigned)sizeof(path)));
 
-//    wprintf_s(L"%ls", path);
-//    num = count_files(path);
-//    printf("num = %d\n", num);
-//    find(path, num);
     return 1;
 }
