@@ -11,6 +11,85 @@ typedef struct {
     unsigned long long size_file;
 } file;
 
+int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsigned int end, int type);
+
+int merge_recursion(file* ptr, unsigned int count, int type) {
+    unsigned long long* buff;
+    double time_spent = 0.0;
+
+
+    if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
+        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
+        return 0;
+    }
+    for (unsigned int i = 0; i < count; i++)
+        buff[i] = ptr[i].size_file;
+    clock_t begin = clock();
+    merge_recursion_sort(buff, 0, count - 1, type);
+    clock_t end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("The elapsed time is %f seconds", time_spent);
+    printf("\n");
+
+    for (unsigned int i = 0; i < count; i++)
+        for (unsigned int j = 0; j < count; j++)
+            if (buff[i] == ptr[j].size_file) {
+                printf("%d\t%ls\t %llu\n", i, ptr[j].name_file, ptr[j].size_file);
+                break;
+            }
+
+    free(buff);
+    return 1;
+}
+
+int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsigned int end, int type) {
+    unsigned long long* temp;   // дополнительные массивы
+
+    if (start == end) return 1; // границы сомкнулись
+  
+    unsigned int mid = (start + end) / 2; // определяем середину последовательности
+    // и рекурсивно вызываем функцию сортировки для каждой половины
+    merge_recursion_sort(ptr_size, start, mid, type);
+    merge_recursion_sort(ptr_size, mid + 1, end, type);
+    unsigned int i = start;     // начало первого пути
+    unsigned int j = mid + 1;   // начало второго пути
+    if ((temp = (unsigned long long*)malloc(sizeof(unsigned long long) * end)) == NULL) {   // дополнительный массив
+        printf("Unable to allocate %llu bytes of memory for character buffer\n", end * sizeof(file));
+        return 0;
+    }
+    for (unsigned int step = 0; step < end - start + 1; step++)                      // для всех элементов дополнительного массива
+    {
+        // записываем в формируемую последовательность меньший из элементов двух путей
+        // или остаток первого пути если j > r
+        switch (type) {
+        case 1:
+            if ((j > end) || ((i <= mid) && (ptr_size[i] < ptr_size[j]))) {
+                temp[step] = ptr_size[i];
+                i++;
+            }
+            else {
+                temp[step] = ptr_size[j];
+                j++;
+            }
+            break;
+        case 2:
+            if ((j > end) || ((i <= mid) && (ptr_size[i] > ptr_size[j]))) {
+                temp[step] = ptr_size[i];
+                i++;
+            }
+            else {
+                temp[step] = ptr_size[j];
+                j++;
+            }
+        }
+    }
+    // переписываем сформированную последовательность в исходный массив
+    for (unsigned int step = 0; step < end - start + 1; step++)
+        ptr_size[start + step] = temp[step];
+    free(temp);
+    return 1;
+}
+
 int merge_sort(file* ptr, unsigned int count, int type) {
     unsigned int step = 1;              // шаг разбиения последовательности
     unsigned long long* buff, * temp;   // дополнительные массивы
@@ -205,7 +284,7 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort)
     file *ptrf;
     unsigned int i = 0;
  
-    if ((ptrf = (file*)malloc((count) * (unsigned int)sizeof(file))) == NULL) {
+    if ((ptrf = (file*)malloc(count * (unsigned long long)sizeof(file))) == NULL) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
         return 0;
     }
@@ -234,7 +313,7 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort)
                     ptrf[i].size_file = nFileLen;
 //                printf("\n%d\t%ls\t %llu\n", i, ptrf[i].name_file, ptrf[i].size_file);
                 i++;
-            }
+            }            
         }
         switch(type_sort) {
         case 1: printf("Select sort. Sort by ascending size.\n");
@@ -255,9 +334,15 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort)
         case 6: printf("Merge sort. Sort by dicending size.\n");
                 merge_sort(ptrf, count, 2);
                 break;
+        case 7: printf("Merge recursion sort. Sort by ascending size.\n");
+                merge_recursion(ptrf, count, 1);
+                break;
+        case 8: printf("Merge recursion sort. Sort by dicending size.\n");
+                merge_recursion(ptrf, count, 2);
+                break;
         default:for (unsigned int j = 0; j < count; j++)
                     printf("%d\t%ls\t %llu\n", j, ptrf[j].name_file, ptrf[j].size_file);
-                printf("Sort type from 1 to 6\n");
+                printf("Sort type from 1 to 8\n");
         }
         free(ptrf);
         FindClose(hf);
@@ -295,9 +380,8 @@ int count_files(wchar_t* PathAndName)
 }
 int main() {
     unsigned int num = 0;
-//    wchar_t *path = L"C:\\book\\*.*";
+//    wchar_t *path;
     wchar_t path[100];
-    wchar_t ch = '\\';
     int type_sort;
 
     setlocale(LC_ALL, "Russian");
@@ -305,6 +389,7 @@ int main() {
      do {
         printf("enter path or exit: ");
 //        fgetws(str, 100, stdin);
+//        path = (wchar_t*)malloc(sizeof(wchar_t) * 100);
         wscanf_s(L"%s", path, (unsigned)_countof(path));
 
         if (wcsncmp(path, L"exit", (unsigned)sizeof(path))) {
@@ -314,6 +399,9 @@ int main() {
             printf("4. Insert sort. Sort by dicending size.\n");
             printf("5. Merge sort. Sort by ascending size.\n");
             printf("6. Merge sort. Sort by dicending size.\n");
+            printf("7. Merge recursion sort. Sort by ascending size.\n");
+            printf("8. Merge recursion sort. Sort by dicending size.\n");
+
             printf("Enter file sort type: ");
             scanf_s("%d", &type_sort);
             num = count_files(path);
@@ -321,6 +409,7 @@ int main() {
             printf("\n");
             find(path, num, type_sort);
         }
+//        free(path);
     } while (wcsncmp(path, L"exit", (unsigned)sizeof(path)));
 
     return 1;
