@@ -5,6 +5,9 @@
 #include <string.h>
 #include <malloc.h>
 #include <time.h>
+#pragma warning(disable : 6386) 
+#pragma warning(disable : 6385) 
+
 
 typedef struct {
     wchar_t name_file[260];
@@ -19,11 +22,14 @@ int merge_recursion(file* ptr, unsigned int count, int type) {
 
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
-        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
+        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
         return 0;
     }
-    for (unsigned int i = 0; i < count; i++)
+    for (unsigned int i = 0; i < count; i++) {
         buff[i] = ptr[i].size_file;
+//        printf("%d\t%d\t %llu\n", i, count, ptr[i].size_file);
+    }
+//    printf("sizeof(buff)=%d", (unsigned int)sizeof(buff));
     clock_t begin = clock();
     merge_recursion_sort(buff, 0, count - 1, type);
     clock_t end = clock();
@@ -53,10 +59,11 @@ int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsig
     merge_recursion_sort(ptr_size, mid + 1, end, type);
     unsigned int i = start;     // начало первого пути
     unsigned int j = mid + 1;   // начало второго пути
-    if ((temp = (unsigned long long*)malloc(sizeof(unsigned long long) * end)) == NULL) {   // дополнительный массив
-        printf("Unable to allocate %llu bytes of memory for character buffer\n", end * sizeof(file));
+    if ((temp = (unsigned long long*)malloc(sizeof(unsigned long long) * (end + 1))) == NULL) {   // дополнительный массив
+        printf("Unable to allocate %llu bytes of memory for character buffer\n", end * sizeof(unsigned long long));
         return 0;
     }
+//    printf("malloc temp\n");
     for (unsigned int step = 0; step < end - start + 1; step++)                      // для всех элементов дополнительного массива
     {
         // записываем в формируемую последовательность меньший из элементов двух путей
@@ -96,14 +103,14 @@ int merge_sort(file* ptr, unsigned int count, int type) {
     double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
-        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
+        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
         return 0;
     }
     for (unsigned int i = 0; i < count; i++) 
             buff[i] = ptr[i].size_file;
     
     if ((temp = malloc(sizeof(unsigned long long) * count)) == NULL) {
-        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
+        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
         return 0;
     }
 
@@ -166,7 +173,7 @@ int insert_sort(file* ptr, unsigned int count, int type) {
     double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
-        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
+        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
         return 0;
     }
     for (unsigned int i = 0; i < count; i++) {
@@ -222,7 +229,7 @@ int select_sort(file* ptr, unsigned int count, int type) {
     double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
-        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
+        printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
         return 0;
     }
     for (unsigned int i = 0; i < count; i++) {
@@ -296,7 +303,7 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort)
     }
 
     if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-        wcscpy_s(ptrf[i].name_file, sizeof(FindFileData.cFileName) / sizeof(wchar_t), FindFileData.cFileName);
+        wcscpy_s(ptrf[i].name_file, _countof(FindFileData.cFileName), FindFileData.cFileName);
         nFileLen = (FindFileData.nFileSizeHigh * ((unsigned long long)MAXDWORD + 1)) + FindFileData.nFileSizeLow;
         ptrf[i].size_file = nFileLen;
         i++;
@@ -307,7 +314,7 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort)
             if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 //                printf("%ls\t Каталог\n", FindFileData.cFileName);
             else {
-                wcscpy_s(ptrf[i].name_file, sizeof(FindFileData.cFileName) / sizeof(wchar_t), FindFileData.cFileName);
+                wcscpy_s(ptrf[i].name_file, _countof(FindFileData.cFileName), FindFileData.cFileName);
  //               printf("sizeof() = %llu\n", (unsigned long long)(sizeof(FindFileData.cFileName) / sizeof(wchar_t)));
                 if (i < count)
                     ptrf[i].size_file = nFileLen;
@@ -380,19 +387,19 @@ int count_files(wchar_t* PathAndName)
 }
 int main() {
     unsigned int num = 0;
-//    wchar_t *path;
-    wchar_t path[100];
+    wchar_t /*ch,*/ path[100] = L" ";
+//    long sLen;
     int type_sort;
 
     setlocale(LC_ALL, "Russian");
     
-     do {
+    do {
         printf("enter path or exit: ");
-//        fgetws(str, 100, stdin);
-//        path = (wchar_t*)malloc(sizeof(wchar_t) * 100);
+ //       for (sLen = 0; (ch = getwchar()) != '\n'; sLen++)
+ //           path[sLen] = ch;
+ //       path[sLen] = '\0';
         wscanf_s(L"%s", path, (unsigned)_countof(path));
-
-        if (wcsncmp(path, L"exit", (unsigned)sizeof(path))) {
+        if (wcsncmp(path, L"exit", (unsigned)_countof(path))) {
             printf("1. Select sort. Sort by ascending size.\n");
             printf("2. Select sort. Sort by dicending size.\n");
             printf("3. Insert sort. Sort by ascending size.\n");
@@ -409,7 +416,6 @@ int main() {
             printf("\n");
             find(path, num, type_sort);
         }
-//        free(path);
     } while (wcsncmp(path, L"exit", (unsigned)sizeof(path)));
 
     return 1;
