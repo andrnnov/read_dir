@@ -1,13 +1,10 @@
-#include <stdio.h>
+п»ї#include <stdio.h>
 #include <windows.h>
 #include <conio.h>
 #include <locale.h>
 #include <string.h>
 #include <malloc.h>
 #include <time.h>
-#pragma warning(disable : 6386) 
-#pragma warning(disable : 6385) 
-
 
 typedef struct {
     wchar_t name_file[260];
@@ -49,25 +46,25 @@ int merge_recursion(file* ptr, unsigned int count, int type) {
 }
 
 int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsigned int end, int type) {
-    unsigned long long* temp;   // дополнительные массивы
+    unsigned long long* temp;   // РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РјР°СЃСЃРёРІС‹
 
-    if (start == end) return 1; // границы сомкнулись
+    if (start == end) return 1; // РіСЂР°РЅРёС†С‹ СЃРѕРјРєРЅСѓР»РёСЃСЊ
   
-    unsigned int mid = (start + end) / 2; // определяем середину последовательности
-    // и рекурсивно вызываем функцию сортировки для каждой половины
+    unsigned int mid = (start + end) / 2; // РѕРїСЂРµРґРµР»СЏРµРј СЃРµСЂРµРґРёРЅСѓ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
+    // Рё СЂРµРєСѓСЂСЃРёРІРЅРѕ РІС‹Р·С‹РІР°РµРј С„СѓРЅРєС†РёСЋ СЃРѕСЂС‚РёСЂРѕРІРєРё РґР»СЏ РєР°Р¶РґРѕР№ РїРѕР»РѕРІРёРЅС‹
     merge_recursion_sort(ptr_size, start, mid, type);
     merge_recursion_sort(ptr_size, mid + 1, end, type);
-    unsigned int i = start;     // начало первого пути
-    unsigned int j = mid + 1;   // начало второго пути
-    if ((temp = (unsigned long long*)malloc(sizeof(unsigned long long) * (end + 1))) == NULL) {   // дополнительный массив
+    unsigned int i = start;     // РЅР°С‡Р°Р»Рѕ РїРµСЂРІРѕРіРѕ РїСѓС‚Рё
+    unsigned int j = mid + 1;   // РЅР°С‡Р°Р»Рѕ РІС‚РѕСЂРѕРіРѕ РїСѓС‚Рё
+    if ((temp = (unsigned long long*)malloc(sizeof(unsigned long long) * (end + 1))) == NULL) {   // РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Р№ РјР°СЃСЃРёРІ
         printf("Unable to allocate %llu bytes of memory for character buffer\n", end * sizeof(unsigned long long));
         return 0;
     }
 //    printf("malloc temp\n");
-    for (unsigned int step = 0; step < end - start + 1; step++)                      // для всех элементов дополнительного массива
+    for (unsigned int step = 0; step < end - start + 1; step++)                      // РґР»СЏ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅРѕРіРѕ РјР°СЃСЃРёРІР°
     {
-        // записываем в формируемую последовательность меньший из элементов двух путей
-        // или остаток первого пути если j > r
+        // Р·Р°РїРёСЃС‹РІР°РµРј РІ С„РѕСЂРјРёСЂСѓРµРјСѓСЋ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РјРµРЅСЊС€РёР№ РёР· СЌР»РµРјРµРЅС‚РѕРІ РґРІСѓС… РїСѓС‚РµР№
+        // РёР»Рё РѕСЃС‚Р°С‚РѕРє РїРµСЂРІРѕРіРѕ РїСѓС‚Рё РµСЃР»Рё j > r
         switch (type) {
         case 1:
             if ((j > end) || ((i <= mid) && (ptr_size[i] < ptr_size[j]))) {
@@ -90,7 +87,7 @@ int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsig
             }
         }
     }
-    // переписываем сформированную последовательность в исходный массив
+    // РїРµСЂРµРїРёСЃС‹РІР°РµРј СЃС„РѕСЂРјРёСЂРѕРІР°РЅРЅСѓСЋ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚СЊ РІ РёСЃС…РѕРґРЅС‹Р№ РјР°СЃСЃРёРІ
     for (unsigned int step = 0; step < end - start + 1; step++)
         ptr_size[start + step] = temp[step];
     free(temp);
@@ -98,8 +95,8 @@ int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsig
 }
 
 int merge_sort(file* ptr, unsigned int count, int type) {
-    unsigned int step = 1;              // шаг разбиения последовательности
-    unsigned long long* buff, * temp;   // дополнительные массивы
+    unsigned int step = 1;              // С€Р°Рі СЂР°Р·Р±РёРµРЅРёСЏ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
+    unsigned long long* buff, * temp;   // РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РјР°СЃСЃРёРІС‹
     double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
@@ -116,37 +113,37 @@ int merge_sort(file* ptr, unsigned int count, int type) {
 
     clock_t begin = clock();
     while (step < count) {
-        unsigned int index = 0;             // индекс результирующего массива
-        unsigned int l = 0;                 // левая граница участка
-        unsigned int m = l + step;          // середина участка
-        unsigned int r = l + step * 2;      // правая граница участка
+        unsigned int index = 0;             // РёРЅРґРµРєСЃ СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РµРіРѕ РјР°СЃСЃРёРІР°
+        unsigned int l = 0;                 // Р»РµРІР°СЏ РіСЂР°РЅРёС†Р° СѓС‡Р°СЃС‚РєР°
+        unsigned int m = l + step;          // СЃРµСЂРµРґРёРЅР° СѓС‡Р°СЃС‚РєР°
+        unsigned int r = l + step * 2;      // РїСЂР°РІР°СЏ РіСЂР°РЅРёС†Р° СѓС‡Р°СЃС‚РєР°
         do
         {
-            m = m < count ? m : count;      // сортируемый участок не выходит за границы последовательности
+            m = m < count ? m : count;      // СЃРѕСЂС‚РёСЂСѓРµРјС‹Р№ СѓС‡Р°СЃС‚РѕРє РЅРµ РІС‹С…РѕРґРёС‚ Р·Р° РіСЂР°РЅРёС†С‹ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
             r = r < count ? r : count;
-            unsigned int i1 = l, i2 = m;    // индексы сравниваемых элементов
-            while (i1 < m && i2 < r) {      // пока i1 не дошёл до середины и i2 не дошёл до конца
+            unsigned int i1 = l, i2 = m;    // РёРЅРґРµРєСЃС‹ СЃСЂР°РІРЅРёРІР°РµРјС‹С… СЌР»РµРјРµРЅС‚РѕРІ
+            while (i1 < m && i2 < r) {      // РїРѕРєР° i1 РЅРµ РґРѕС€С‘Р» РґРѕ СЃРµСЂРµРґРёРЅС‹ Рё i2 РЅРµ РґРѕС€С‘Р» РґРѕ РєРѕРЅС†Р°
                 switch (type) {
                 case 1:
-                    if (buff[i1] < buff[i2]) temp[index++] = buff[i1++];    // заполняем участок результирующей последовательности
+                    if (buff[i1] < buff[i2]) temp[index++] = buff[i1++];    // Р·Р°РїРѕР»РЅСЏРµРј СѓС‡Р°СЃС‚РѕРє СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РµР№ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
                     else temp[index++] = buff[i2++];
                     break;
                 case 2:
-                    if (buff[i1] > buff[i2]) temp[index++] = buff[i1++];    // заполняем участок результирующей последовательности
+                    if (buff[i1] > buff[i2]) temp[index++] = buff[i1++];    // Р·Р°РїРѕР»РЅСЏРµРј СѓС‡Р°СЃС‚РѕРє СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РµР№ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
                     else temp[index++] = buff[i2++];
                     break;
                 }               
             }
-            // Или i1 < m или i2 < r - только один из операторов while может выполниться
-            while (i1 < m) temp[index++] = buff[i1++];  // заносим оставшиеся элементы сортируемых участков
-            while (i2 < r) temp[index++] = buff[i2++];  // в результирующий массив
-            l += step * 2;                              // перемещаемся на следующий сортируемый участок
+            // РР»Рё i1 < m РёР»Рё i2 < r - С‚РѕР»СЊРєРѕ РѕРґРёРЅ РёР· РѕРїРµСЂР°С‚РѕСЂРѕРІ while РјРѕР¶РµС‚ РІС‹РїРѕР»РЅРёС‚СЊСЃСЏ
+            while (i1 < m) temp[index++] = buff[i1++];  // Р·Р°РЅРѕСЃРёРј РѕСЃС‚Р°РІС€РёРµСЃСЏ СЌР»РµРјРµРЅС‚С‹ СЃРѕСЂС‚РёСЂСѓРµРјС‹С… СѓС‡Р°СЃС‚РєРѕРІ
+            while (i2 < r) temp[index++] = buff[i2++];  // РІ СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РёР№ РјР°СЃСЃРёРІ
+            l += step * 2;                              // РїРµСЂРµРјРµС‰Р°РµРјСЃСЏ РЅР° СЃР»РµРґСѓСЋС‰РёР№ СЃРѕСЂС‚РёСЂСѓРµРјС‹Р№ СѓС‡Р°СЃС‚РѕРє
             m += step * 2;
             r += step * 2;
-        } while (l < count);                            // пока левая граница сортируемого участка - в пределах последоватльности
-        for (unsigned int i = 0; i < count; i++)        // переносим сформированный массив обратно в buff
+        } while (l < count);                            // РїРѕРєР° Р»РµРІР°СЏ РіСЂР°РЅРёС†Р° СЃРѕСЂС‚РёСЂСѓРµРјРѕРіРѕ СѓС‡Р°СЃС‚РєР° - РІ РїСЂРµРґРµР»Р°С… РїРѕСЃР»РµРґРѕРІР°С‚Р»СЊРЅРѕСЃС‚Рё
+        for (unsigned int i = 0; i < count; i++)        // РїРµСЂРµРЅРѕСЃРёРј СЃС„РѕСЂРјРёСЂРѕРІР°РЅРЅС‹Р№ РјР°СЃСЃРёРІ РѕР±СЂР°С‚РЅРѕ РІ buff
             buff[i] = temp[i];
-        step *= 2;                                      // увеличиваем в 2 раза шаг разбиения
+        step *= 2;                                      // СѓРІРµР»РёС‡РёРІР°РµРј РІ 2 СЂР°Р·Р° С€Р°Рі СЂР°Р·Р±РёРµРЅРёСЏ
     }
     clock_t end = clock();
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
@@ -312,7 +309,7 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort)
         while (FindNextFile(hf, &FindFileData)) {
             nFileLen = (FindFileData.nFileSizeHigh * ((unsigned long long)MAXDWORD + 1)) + FindFileData.nFileSizeLow;
             if (FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-//                printf("%ls\t Каталог\n", FindFileData.cFileName);
+//                printf("%ls\t РљР°С‚Р°Р»РѕРі\n", FindFileData.cFileName);
             else {
                 wcscpy_s(ptrf[i].name_file, _countof(FindFileData.cFileName), FindFileData.cFileName);
  //               printf("sizeof() = %llu\n", (unsigned long long)(sizeof(FindFileData.cFileName) / sizeof(wchar_t)));
