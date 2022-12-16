@@ -1,16 +1,12 @@
 ﻿#include <stdio.h>
 #include <windows.h>
-//#include <conio.h>
 #include <locale.h>
-//#include <string.h>
-//#include <malloc.h>
 
 #include "header.h"
 
 int main() {
     unsigned int num = 0;
-    wchar_t /*ch,*/ path[100] = L" ";
-//    long sLen;
+    wchar_t path[100] = L" ";
     int type_sort;
 
     setlocale(LC_ALL, "Russian");

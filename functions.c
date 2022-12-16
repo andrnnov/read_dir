@@ -7,11 +7,18 @@
 
 #include "header.h"
 
+void show_files(file* ptr, unsigned long long* buff, unsigned int count) {
+    for (unsigned int i = 0; i < count; i++)
+        for (unsigned int j = 0; j < count; j++)
+            if (buff[i] == ptr[j].size_file) {
+                printf("%d\t%ls\t %llu\n", i, ptr[j].name_file, ptr[j].size_file);
+                break;
+            }
+}
 
 int merge_recursion(file* ptr, unsigned int count, int type) {
-    unsigned long long* buff;
+    unsigned long long* buff = NULL;
     double time_spent = 0.0;
-
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
@@ -29,19 +36,14 @@ int merge_recursion(file* ptr, unsigned int count, int type) {
     printf("The elapsed time is %f seconds", time_spent);
     printf("\n");
 
-    for (unsigned int i = 0; i < count; i++)
-        for (unsigned int j = 0; j < count; j++)
-            if (buff[i] == ptr[j].size_file) {
-                printf("%d\t%ls\t %llu\n", i, ptr[j].name_file, ptr[j].size_file);
-                break;
-            }
+    show_files(ptr, buff, count);
 
     free(buff);
     return 1;
 }
 
 int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsigned int end, int type) {
-    unsigned long long* temp;   // дополнительные массивы
+    unsigned long long* temp = NULL;   // дополнительные массивы
 
     if (start == end) return 1; // границы сомкнулись
 
@@ -61,7 +63,7 @@ int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsig
         // записываем в формируемую последовательность меньший из элементов двух путей
         // или остаток первого пути если j > r
         switch (type) {
-        case 1:
+        case ASCENDING:
             if ((j > end) || ((i <= mid) && (ptr_size[i] < ptr_size[j]))) {
                 temp[step] = ptr_size[i];
                 i++;
@@ -71,7 +73,7 @@ int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsig
                 j++;
             }
             break;
-        case 2:
+        case DISCENDING:
             if ((j > end) || ((i <= mid) && (ptr_size[i] > ptr_size[j]))) {
                 temp[step] = ptr_size[i];
                 i++;
@@ -91,7 +93,7 @@ int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsig
 
 int merge_sort(file* ptr, unsigned int count, int type) {
     unsigned int step = 1;              // шаг разбиения последовательности
-    unsigned long long* buff, * temp;   // дополнительные массивы
+    unsigned long long* buff = NULL, * temp = NULL;   // дополнительные массивы
     double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
@@ -119,11 +121,11 @@ int merge_sort(file* ptr, unsigned int count, int type) {
             unsigned int i1 = l, i2 = m;    // индексы сравниваемых элементов
             while (i1 < m && i2 < r) {      // пока i1 не дошёл до середины и i2 не дошёл до конца
                 switch (type) {
-                case 1:
+                case ASCENDING:
                     if (buff[i1] < buff[i2]) temp[index++] = buff[i1++];    // заполняем участок результирующей последовательности
                     else temp[index++] = buff[i2++];
                     break;
-                case 2:
+                case DISCENDING:
                     if (buff[i1] > buff[i2]) temp[index++] = buff[i1++];    // заполняем участок результирующей последовательности
                     else temp[index++] = buff[i2++];
                     break;
@@ -145,12 +147,7 @@ int merge_sort(file* ptr, unsigned int count, int type) {
     printf("The elapsed time is %f seconds", time_spent);
     printf("\n");
 
-    for (unsigned int i = 0; i < count; i++)
-        for (unsigned int j = 0; j < count; j++)
-            if (buff[i] == ptr[j].size_file) {
-                printf("%d\t%ls\t %llu\n", i, ptr[j].name_file, ptr[j].size_file);
-                break;
-            }
+    show_files(ptr, buff, count);
 
     free(temp);
     free(buff);
@@ -161,7 +158,7 @@ int merge_sort(file* ptr, unsigned int count, int type) {
 int insert_sort(file* ptr, unsigned int count, int type) {
     unsigned int j = 0, key = 0;
     unsigned long long t = 0;
-    unsigned long long* buff;
+    unsigned long long* buff = NULL;
     double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
@@ -180,14 +177,14 @@ int insert_sort(file* ptr, unsigned int count, int type) {
         for (j = i + 1; j > 0; j--)
         {
             switch (type) {
-            case 1:
+            case ASCENDING:
                 if (t > buff[j - 1])
                 {
                     buff[j] = buff[j - 1];
                     key = j - 1;
                 }
                 break;
-            case 2:
+            case DISCENDING:
                 if (t < buff[j - 1])
                 {
                     buff[j] = buff[j - 1];
@@ -202,12 +199,8 @@ int insert_sort(file* ptr, unsigned int count, int type) {
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
     printf("The elapsed time is %f seconds", time_spent);
     printf("\n");
-    for (unsigned int i = 0; i < count; i++)
-        for (j = 0; j < count; j++)
-            if (buff[i] == ptr[j].size_file) {
-                printf("%d\t%ls\t %llu\n", i, ptr[j].name_file, ptr[j].size_file);
-                break;
-            }
+
+    show_files(ptr, buff, count);
 
     free(buff);
     return 1;
@@ -217,7 +210,7 @@ int select_sort(file* ptr, unsigned int count, int type) {
     unsigned int a, b, c;
     int exchange = 0;
     unsigned long long t = 0;
-    unsigned long long* buff;
+    unsigned long long* buff = NULL;
     double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
@@ -235,7 +228,7 @@ int select_sort(file* ptr, unsigned int count, int type) {
         c = a;
         t = buff[a];
         switch (type) {
-        case 1:
+        case ASCENDING:
             for (b = a + 1; b < count; ++b) {
                 if (buff[b] < t) {
                     c = b;
@@ -244,7 +237,7 @@ int select_sort(file* ptr, unsigned int count, int type) {
                 }
             }
             break;
-        case 2:
+        case DISCENDING:
             for (b = a + 1; b < count; ++b) {
                 if (buff[b] > t) {
                     c = b;
@@ -262,14 +255,9 @@ int select_sort(file* ptr, unsigned int count, int type) {
     clock_t end = clock();
     time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
     printf("The elapsed time is %f seconds", time_spent);
-
     printf("\n");
-    for (a = 0; a < count; a++)
-        for (b = 0; b < count; b++)
-            if (buff[a] == ptr[b].size_file) {
-                printf("%d\t%ls\t %llu\n", a, ptr[b].name_file, ptr[b].size_file);
-                break;
-            }
+
+    show_files(ptr, buff, count);
 
     free(buff);
     return 1;
@@ -279,10 +267,10 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort) {
     WIN32_FIND_DATA FindFileData;
     HANDLE hf;
     unsigned long long nFileLen = 0;
-    file* ptrf;
+    file* ptrf = NULL;
     unsigned int i = 0;
 
-    if ((ptrf = (file*)malloc(count * (unsigned long long)sizeof(file))) == NULL) {
+    if ((ptrf = (file*)malloc(count * (unsigned int)sizeof(file))) == NULL) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(file));
         return 0;
     }
@@ -290,7 +278,6 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort) {
     if (hf == INVALID_HANDLE_VALUE) {
         printf("Invalid File Handle. GetLastError reports %d\n",
             GetLastError());
-
         return -1;
     }
 
@@ -314,35 +301,7 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort) {
                 i++;
             }
         }
-        switch (type_sort) {
-        case 1: printf("Select sort. Sort by ascending size.\n");
-            select_sort(ptrf, count, 1);
-            break;
-        case 2: printf("Select sort. Sort by dicending size.\n");
-            select_sort(ptrf, count, 2);
-            break;
-        case 3: printf("Insert sort. Sort by ascending size.\n");
-            insert_sort(ptrf, count, 1);
-            break;
-        case 4: printf("Insert sort. Sort by dicending size.\n");
-            insert_sort(ptrf, count, 2);
-            break;
-        case 5: printf("Merge sort. Sort by ascending size.\n");
-            merge_sort(ptrf, count, 1);
-            break;
-        case 6: printf("Merge sort. Sort by dicending size.\n");
-            merge_sort(ptrf, count, 2);
-            break;
-        case 7: printf("Merge recursion sort. Sort by ascending size.\n");
-            merge_recursion(ptrf, count, 1);
-            break;
-        case 8: printf("Merge recursion sort. Sort by dicending size.\n");
-            merge_recursion(ptrf, count, 2);
-            break;
-        default:for (unsigned int j = 0; j < count; j++)
-            printf("%d\t%ls\t %llu\n", j, ptrf[j].name_file, ptrf[j].size_file);
-            printf("Sort type from 1 to 8\n");
-        }
+        menu(ptrf, count, type_sort);
         free(ptrf);
         FindClose(hf);
         system("pause");
@@ -376,3 +335,36 @@ int count_files(wchar_t* PathAndName) {
     //    system("pause");
     return i;
 }
+
+void menu(file * ptrf, unsigned int count, int type_sort) {
+    switch (type_sort) {
+    case 1: printf("Select sort. Sort by ascending size.\n");
+        select_sort(ptrf, count, ASCENDING);
+        break;
+    case 2: printf("Select sort. Sort by dicending size.\n");
+        select_sort(ptrf, count, DISCENDING);
+        break;
+    case 3: printf("Insert sort. Sort by ascending size.\n");
+        insert_sort(ptrf, count, ASCENDING);
+        break;
+    case 4: printf("Insert sort. Sort by dicending size.\n");
+        insert_sort(ptrf, count, DISCENDING);
+        break;
+    case 5: printf("Merge sort. Sort by ascending size.\n");
+        merge_sort(ptrf, count, ASCENDING);
+        break;
+    case 6: printf("Merge sort. Sort by dicending size.\n");
+        merge_sort(ptrf, count, DISCENDING);
+        break;
+    case 7: printf("Merge recursion sort. Sort by ascending size.\n");
+        merge_recursion(ptrf, count, ASCENDING);
+        break;
+    case 8: printf("Merge recursion sort. Sort by dicending size.\n");
+        merge_recursion(ptrf, count, DISCENDING);
+        break;
+    default:for (unsigned int j = 0; j < count; j++)
+        printf("%d\t%ls\t %llu\n", j, ptrf[j].name_file, ptrf[j].size_file);
+        printf("Sort type from 1 to 8\n");
+    }
+
+ }
