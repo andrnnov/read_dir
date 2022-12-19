@@ -18,7 +18,6 @@ void show_files(file* ptr, unsigned long long* buff, unsigned int count) {
 
 int merge_recursion(file* ptr, unsigned int count, int type) {
     unsigned long long* buff = NULL;
-    double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
@@ -28,14 +27,7 @@ int merge_recursion(file* ptr, unsigned int count, int type) {
         buff[i] = ptr[i].size_file;
         //        printf("%d\t%d\t %llu\n", i, count, ptr[i].size_file);
     }
-    //    printf("sizeof(buff)=%d", (unsigned int)sizeof(buff));
-    clock_t begin = clock();
     merge_recursion_sort(buff, 0, count - 1, type);
-    clock_t end = clock();
-    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
-    printf("The elapsed time is %f seconds", time_spent);
-    printf("\n");
-
     show_files(ptr, buff, count);
 
     free(buff);
@@ -94,7 +86,6 @@ int merge_recursion_sort(unsigned long long* ptr_size, unsigned int start, unsig
 int merge_sort(file* ptr, unsigned int count, int type) {
     unsigned int step = 1;              // шаг разбиения последовательности
     unsigned long long* buff = NULL, * temp = NULL;   // дополнительные массивы
-    double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
@@ -108,7 +99,6 @@ int merge_sort(file* ptr, unsigned int count, int type) {
         return 0;
     }
 
-    clock_t begin = clock();
     while (step < count) {
         unsigned int index = 0;             // индекс результирующего массива
         unsigned int l = 0;                 // левая граница участка
@@ -142,11 +132,6 @@ int merge_sort(file* ptr, unsigned int count, int type) {
             buff[i] = temp[i];
         step *= 2;                                      // увеличиваем в 2 раза шаг разбиения
     }
-    clock_t end = clock();
-    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
-    printf("The elapsed time is %f seconds", time_spent);
-    printf("\n");
-
     show_files(ptr, buff, count);
 
     free(temp);
@@ -159,7 +144,6 @@ int insert_sort(file* ptr, unsigned int count, int type) {
     unsigned int j = 0, key = 0;
     unsigned long long t = 0;
     unsigned long long* buff = NULL;
-    double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
@@ -169,7 +153,6 @@ int insert_sort(file* ptr, unsigned int count, int type) {
         buff[i] = ptr[i].size_file;
     }
 
-    clock_t begin = clock();
     for (unsigned int i = 0; i < count - 1; i++)
     {
         key = i + 1;
@@ -195,11 +178,6 @@ int insert_sort(file* ptr, unsigned int count, int type) {
         }
         buff[key] = t;
     }
-    clock_t end = clock();
-    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
-    printf("The elapsed time is %f seconds", time_spent);
-    printf("\n");
-
     show_files(ptr, buff, count);
 
     free(buff);
@@ -211,7 +189,6 @@ int select_sort(file* ptr, unsigned int count, int type) {
     int exchange = 0;
     unsigned long long t = 0;
     unsigned long long* buff = NULL;
-    double time_spent = 0.0;
 
     if ((buff = malloc(sizeof(unsigned long long) * count)) == NULL) {
         printf("Unable to allocate %llu bytes of memory for character buffer\n", count * sizeof(unsigned long long));
@@ -222,7 +199,6 @@ int select_sort(file* ptr, unsigned int count, int type) {
             buff[i] = ptr[i].size_file;
     }
 
-    clock_t begin = clock();
     for (a = 0; a < count - 1; ++a) {
         exchange = 0;
         c = a;
@@ -252,11 +228,6 @@ int select_sort(file* ptr, unsigned int count, int type) {
             buff[a] = t;
         }
     }
-    clock_t end = clock();
-    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
-    printf("The elapsed time is %f seconds", time_spent);
-    printf("\n");
-
     show_files(ptr, buff, count);
 
     free(buff);
@@ -337,30 +308,36 @@ int count_files(wchar_t* PathAndName) {
 }
 
 void menu(file * ptrf, unsigned int count, int type_sort) {
+    int (*menu[4])(file *, unsigned int, int);
+    menu[0] = select_sort;
+    menu[1] = insert_sort;
+    menu[2] = merge_sort;
+    menu[3] = merge_recursion;
+
     switch (type_sort) {
     case 1: printf("Select sort. Sort by ascending size.\n");
-        select_sort(ptrf, count, ASCENDING);
+        find_time(ptrf, count, ASCENDING, menu[0]);
         break;
     case 2: printf("Select sort. Sort by dicending size.\n");
-        select_sort(ptrf, count, DISCENDING);
+        find_time(ptrf, count, DISCENDING, menu[0]);
         break;
     case 3: printf("Insert sort. Sort by ascending size.\n");
-        insert_sort(ptrf, count, ASCENDING);
+        find_time(ptrf, count, ASCENDING, menu[1]);
         break;
     case 4: printf("Insert sort. Sort by dicending size.\n");
-        insert_sort(ptrf, count, DISCENDING);
+        find_time(ptrf, count, DISCENDING, menu[1]);
         break;
     case 5: printf("Merge sort. Sort by ascending size.\n");
-        merge_sort(ptrf, count, ASCENDING);
+        find_time(ptrf, count, ASCENDING, menu[2]);
         break;
     case 6: printf("Merge sort. Sort by dicending size.\n");
-        merge_sort(ptrf, count, DISCENDING);
+        find_time(ptrf, count, DISCENDING, menu[2]);
         break;
     case 7: printf("Merge recursion sort. Sort by ascending size.\n");
-        merge_recursion(ptrf, count, ASCENDING);
+        find_time(ptrf, count, ASCENDING, menu[3]);
         break;
     case 8: printf("Merge recursion sort. Sort by dicending size.\n");
-        merge_recursion(ptrf, count, DISCENDING);
+        find_time(ptrf, count, DISCENDING, menu[3]);
         break;
     default:for (unsigned int j = 0; j < count; j++)
         printf("%d\t%ls\t %llu\n", j, ptrf[j].name_file, ptrf[j].size_file);
@@ -368,3 +345,15 @@ void menu(file * ptrf, unsigned int count, int type_sort) {
     }
 
  }
+
+double find_time(file* ptrf, unsigned int count, int type_sort, int (* menu)(file*, unsigned int, int)) {
+    double time_spent = 0.0;
+
+    clock_t begin = clock();
+    menu(ptrf, count, type_sort);
+    clock_t end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("The elapsed time is %f seconds", time_spent);
+    printf("\n");
+    return time_spent;
+}

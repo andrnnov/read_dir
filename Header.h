@@ -16,3 +16,4 @@ int find(wchar_t* PathAndName, unsigned int count, int type_sort);
 int count_files(wchar_t* PathAndName);
 void show_files(file* ptr, unsigned long long* buff, unsigned int count);
 void menu(file* ptrf, unsigned int count, int type_sort);
+double find_time(file* ptrf, unsigned int count, int type_sort, int (*menu)(file*, unsigned int, int));
